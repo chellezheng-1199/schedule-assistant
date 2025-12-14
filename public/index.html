@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能日程助手</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1 class="main-title">For ADHD Patients</h1>
+    <div class="container">
+        <!-- 1. 左上角：待办事项 -->
+        <div class="module todo-module">
+            <div class="module-header">
+                <h2><i class="fas fa-check-square"></i> 待办事项</h2>
+                <div class="sort-options">
+                    <label>排序: </label>
+                    <select id="todo-sort">
+                        <option value="priority">优先级</option>
+                        <option value="deadline" selected>截止日期</option>
+                    </select>
+                </div>
+            </div>
+            <div class="todo-list" id="todo-list">
+                <!-- 待办事项列表项将通过 JS 渲染 -->
+            </div>
+            <div class="todo-input-area">
+                <input type="text" id="new-todo-text" placeholder="输入待办事项...">
+                <div class="todo-meta-inputs">
+                    <input type="date" id="new-todo-date">
+                    <select id="new-todo-priority">
+                        <option value="high">高优先级</option>
+                        <option value="medium" selected>中优先级</option>
+                        <option value="low">低优先级</option>
+                    </select>
+                </div>
+                <button id="add-todo-btn">添加</button>
+            </div>
+        </div>
+
+        <!-- 2. 右上角：周历 -->
+        <div class="module calendar-module">
+            <div class="module-header">
+                <h2><i class="fas fa-calendar-alt"></i> 周历</h2>
+                <div class="calendar-nav">
+                    <button id="prev-week"><i class="fas fa-chevron-left"></i></button>
+                    <span id="current-week-label">2023年 10月</span>
+                    <button id="next-week"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="week-grid" id="week-grid">
+                <!-- 周历内容通过 JS 渲染 -->
+            </div>
+        </div>
+
+        <!-- 3. 左下角：AI助手 -->
+        <div class="module ai-module">
+            <div class="module-header">
+                <h2><i class="fas fa-robot"></i> AI 助手</h2>
+            </div>
+            <div class="chat-container" id="chat-container">
+                <div class="message ai-message">你好！我是你的日程助手。告诉我你的计划，我会帮你安排。</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="ai-input" placeholder="例如：明天下午3点开会...">
+                <button id="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- 4. 右下角：备忘录 -->
+        <div class="module memo-module">
+            <div class="module-header">
+                <h2><i class="fas fa-sticky-note"></i> 备忘录</h2>
+                <button id="add-memo-btn" class="icon-btn"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="memo-list" id="memo-list">
+                <!-- 备忘录列表 -->
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
