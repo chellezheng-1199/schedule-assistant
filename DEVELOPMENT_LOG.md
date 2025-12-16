@@ -26,3 +26,11 @@
 - **环境配置**: 安装 Git，初始化本地仓库。
 - **安全配置**: 配置 `.gitignore` 排除 `node_modules`, `secrets.js`, `.env` 等敏感文件。
 - **远程仓库**: 关联 GitHub 远程仓库 `schedule-assistant`。
+- **安全修复**: 从 Git 历史中移除误上传的 `secrets.js` 和 `cursor_.md`，确保敏感信息不泄露。
+
+## 2024-12-16 - 云端部署方案调整 (Deployment Strategy Adjustment)
+- **尝试 Railway**: 尝试使用 Railway 部署全栈应用，但由于新用户权限限制（仅限数据库），无法部署 Node.js 服务。
+- **方案变更**: 决定采用 **Vercel (前端+Serverless后端)** + **Railway (MySQL数据库)** 的混合部署架构。
+- **代码适配**: 
+  - 为了适应 Vercel 的 Serverless 架构，需要将 `server.js` 拆分为独立的 API 路由 (`/api/*`) 或配置 `vercel.json` 重写规则。
+  - 确保数据库连接池 (`db.js`) 在 Serverless 环境下能正确管理连接（避免冷启动导致的连接耗尽）。
