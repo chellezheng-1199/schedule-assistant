@@ -6,7 +6,6 @@ const db = require('./db');
 const config = require('./config');
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -18,11 +17,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/todos', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM todos ORDER BY created_at DESC');
-        // 因为 db.js 开启了 dateStrings: true，这里获取到的 deadline 已经是 "YYYY-MM-DD" 字符串了
-        // 或者 null。直接返回即可，无需手动转换。
         res.json(rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Database Error (GET /api/todos):', err);
+        res.status(500).json({ error: err.message, stack: err.stack });
     }
 });
 
@@ -36,7 +34,8 @@ app.post('/api/todos', async (req, res) => {
         );
         res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Database Error (POST /api/todos):', err);
+        res.status(500).json({ error: err.message, stack: err.stack });
     }
 });
 
@@ -60,6 +59,7 @@ app.put('/api/todos/:id', async (req, res) => {
         await db.query(`UPDATE todos SET ${fields.join(', ')} WHERE id = ?`, values);
         res.json({ message: 'Todo updated successfully' });
     } catch (err) {
+        console.error('Database Error (PUT /api/todos/:id):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -71,6 +71,7 @@ app.delete('/api/todos/:id', async (req, res) => {
         await db.query('DELETE FROM todos WHERE id = ?', [id]);
         res.json({ message: 'Todo deleted successfully' });
     } catch (err) {
+        console.error('Database Error (DELETE /api/todos/:id):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -81,9 +82,9 @@ app.delete('/api/todos/:id', async (req, res) => {
 app.get('/api/events', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM events ORDER BY date, time');
-        // 同样，直接返回字符串格式的日期
         res.json(rows);
     } catch (err) {
+        console.error('Database Error (GET /api/events):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -98,17 +99,19 @@ app.post('/api/events', async (req, res) => {
         );
         res.status(201).json({ id: result.insertId, ...req.body });
     } catch (err) {
+        console.error('Database Error (POST /api/events):', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// 删除日程 (虽然目前前端主要联动删除，但提供 API 备用)
+// 删除日程
 app.delete('/api/events/:id', async (req, res) => {
     const { id } = req.params;
     try {
         await db.query('DELETE FROM events WHERE id = ?', [id]);
         res.json({ message: 'Event deleted successfully' });
     } catch (err) {
+        console.error('Database Error (DELETE /api/events/:id):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -119,10 +122,10 @@ app.delete('/api/events/:id', async (req, res) => {
 // 获取备忘录
 app.get('/api/memos', async (req, res) => {
     try {
-        // 修改为 ASC (旧的在前，新的在后)，保持和前端 push 的顺序一致
         const [rows] = await db.query('SELECT * FROM memos ORDER BY id ASC');
         res.json(rows);
     } catch (err) {
+        console.error('Database Error (GET /api/memos):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -134,6 +137,7 @@ app.post('/api/memos', async (req, res) => {
         const [result] = await db.query('INSERT INTO memos (content) VALUES (?)', [content]);
         res.status(201).json({ id: result.insertId, content });
     } catch (err) {
+        console.error('Database Error (POST /api/memos):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -146,6 +150,7 @@ app.put('/api/memos/:id', async (req, res) => {
         await db.query('UPDATE memos SET content = ? WHERE id = ?', [content, id]);
         res.json({ message: 'Memo updated successfully' });
     } catch (err) {
+        console.error('Database Error (PUT /api/memos/:id):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -157,6 +162,7 @@ app.delete('/api/memos/:id', async (req, res) => {
         await db.query('DELETE FROM memos WHERE id = ?', [id]);
         res.json({ message: 'Memo deleted successfully' });
     } catch (err) {
+        console.error('Database Error (DELETE /api/memos/:id):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -169,6 +175,7 @@ app.get('/api/chat', async (req, res) => {
         const [rows] = await db.query('SELECT * FROM chat_messages ORDER BY created_at ASC LIMIT 50');
         res.json(rows);
     } catch (err) {
+        console.error('Database Error (GET /api/chat):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -180,6 +187,7 @@ app.post('/api/chat', async (req, res) => {
         const [result] = await db.query('INSERT INTO chat_messages (role, content) VALUES (?, ?)', [role, content]);
         res.status(201).json({ id: result.insertId, role, content });
     } catch (err) {
+        console.error('Database Error (POST /api/chat):', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -215,8 +223,12 @@ app.post('/api/ai', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// 如果是直接运行（本地开发），则启动监听
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
 
-
+module.exports = app;
